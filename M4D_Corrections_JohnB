@@ -1,0 +1,25 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    int i;  // Declare the variable for the for loop
+
+    // Initialize `i` in the loop (fix for uninitialized variable)
+    for (i = 1; i <= 3; i++) { 
+        cout << "This is a for loop and should print 3 times. Number: " << i << endl;
+    }
+
+    int j = 1;  // Variable for the while loop
+    while (j <= 3) { 
+        cout << "While loop. Should print 3 times. Number: " << j << endl;
+        j++;  // Increment `j` within the loop (already correct)
+    }
+
+    int k = 1;  // Variable for the do-while loop
+    do {
+        cout << "Do-while loop. Should print 3 times. Number: " << k << endl;
+        k++;  // Add increment for `k` (fix for infinite loop)
+    } while (k <= 3);
+
+    return 0;
+}
