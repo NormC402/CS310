@@ -1,0 +1,13 @@
+#include <iostream>
+using namespace std;
+
+int main() {
+    // Set up a number to count with
+    int i; 
+
+    // Count from 1 to 12
+    for (i = 1; i <= 12; i++) {  // Fixed: corrected the counting step
+        cout << "Number: " << i << endl;
+    } // Fixed: moved return line to the right place
+    return 0;
+}
