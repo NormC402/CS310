@@ -1,97 +1,117 @@
-﻿/*
-Name: Norman Cervantes
-Course: CS310
-Assignment: Exercise 07‑04 – Vowel Filter
-*/
-
-/*
-Plan: Read a full line input, validate emptiness, then scan and copy segments without vowels using substr calls to generate the filtered string.
-*/
-
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <cctype>
+#include <stdexcept>
 
-// Return true if c is one of A, E, I, O or U (case‑insensitive)
-bool letter_vowel(char c)
-{
-    char lower = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    switch (lower)
-    {
-    case 'a': case 'e': case 'i': case 'o': case 'u':
-        return true;
-    default:
-        return false;
-    }
+/*
+Author: Norman Cervantes
+Course: CS 310
+Assignment: Module 6 Assignment
+
+Description: This program reads a string from the user, uses the substr function
+to build a new string without vowels, and outputs the result with appropriate
+error handling.
+*/
+
+// Function to determine if a character is a vowel (case-insensitive)
+bool isVowelCharacter(char ch) {
+    // Convert character to lowercase for uniform comparison
+    char lowerCh = std::tolower(static_cast<unsigned char>(ch));
+    // Check if the character is one of the vowels (a, e, i, o, u)
+    return (lowerCh == 'a' || lowerCh == 'e' || lowerCh == 'i' || lowerCh == 'o' || lowerCh == 'u');
 }
 
-// Generate a new string omitting every vowel found in src
-// Note: std::string handles its own termination; we just rely on size() here.
-std::string filter_vowels(const std::string& src)
-{
-    std::string result;
-    size_t segment_start = 0;
-
-    // Walk through each character index in src
-    for (size_t i = 0; i < src.size(); ++i)
-    {
-        if (letter_vowel(src[i]))
-        {
-            // Copy everything from segment_start up to (but not including) this vowel
-            if (i > segment_start)
-                result += src.substr(segment_start, i - segment_start);
-
-            // Jump past the vowel for the next segment
-            segment_start = i + 1;
+// Function to remove all vowels from the given string using substr
+std::string removeVowelsFromText(const std::string& input) {
+    std::ostringstream oss;
+    size_t lastIndex = 0;
+    // Iterate over each character to find vowels
+    for (size_t i = 0; i < input.length(); ++i) {
+        if (isVowelCharacter(input[i])) {
+            // Append the substring from lastIndex up to the character before this vowel
+            oss << input.substr(lastIndex, i - lastIndex);
+            // Skip the current vowel by moving lastIndex past this character
+            lastIndex = i + 1;
         }
     }
-
-    // Copy any trailing text after the final vowel
-    if (segment_start < src.size())
-        result += src.substr(segment_start);
-
+    // Append any remaining characters after the last vowel
+    if (lastIndex < input.length()) {
+        oss << input.substr(lastIndex);
+    }
+    // The resulting string in the stream is the input string with vowels removed
+    std::string result = oss.str();
+    // Ensure the result string is null-terminated (std::string handles this automatically)
+    // (std::string stores a '\0' at the end of its character array by default)
     return result;
 }
 
-auto main() -> int
-{
-    std::cout << "Enter text and press ENTER:\n";
-    std::string user_text;
+// Function to handle user input retrieval
+std::string getInputString() {
+    std::string userInput;
+    std::cout << "Enter a string: " << std::flush;
+    std::getline(std::cin, userInput);
+    return userInput;
+}
 
-    // Read the full line (spaces allowed)
-    if (!std::getline(std::cin, user_text))
-    {
-        std::cerr << "Error reading input.\n";
-        return 1;
+// Function to validate the input string for errors (e.g., empty string)
+void validateInput(const std::string& str) {
+    if (str.empty()) {
+        // Throw an exception if the input string is empty
+        throw std::invalid_argument("Input string is empty.");
     }
+    // (Optional) Check if the string contains only whitespace characters
+    bool allSpaces = true;
+    for (char ch : str) {
+        if (!std::isspace(static_cast<unsigned char>(ch))) {
+            allSpaces = false;
+            break;
+        }
+    }
+    if (allSpaces) {
+        throw std::invalid_argument("Input string is empty (only whitespace).");
+    }
+}
 
-    // Handle empty submission
-    if (user_text.empty())
-    {
-        std::cerr << "No text entered; exiting.\n";
-        return 1;
+// Function to display the result to the user
+void displayResult(const std::string& original, const std::string& modified) {
+    if (original == modified) {
+        // If original equals modified, either there were no vowels or the string was empty
+        if (original.empty()) {
+            // This case should be handled by validation before this point
+            std::cout << "No input provided." << std::endl;
+        }
+        else {
+            // No vowels were removed (because none were found in the input)
+            std::cout << "No vowels were found in the input string." << std::endl;
+            std::cout << "Output (unchanged): " << modified << std::endl;
+        }
     }
+    else {
+        // Vowels were removed successfully, output the modified string
+        std::cout << "String after removing vowels: " << modified << std::endl;
+    }
+}
 
-    // Remove vowels
-    std::string cleaned = filter_vowels(user_text);
+int main() {
+    try {
+        // Execute main program logic within a try block to handle exceptions
+        // Get input from the user
+        std::string input = getInputString();
 
-    // All‑vowel case yields empty result
-    if (cleaned.empty())
-    {
-        std::cout << "Result is empty (all characters were vowels).\n";
-    }
-    // No vowels found leaves text unchanged
-    else if (cleaned == user_text)
-    {
-        std::cout << "No vowels removed. Text stays the same:\n"
-            << cleaned << '\n';
-    }
-    // Normal case: some vowels removed
-    else
-    {
-        std::cout << "Filtered text (no vowels):\n"
-            << cleaned << '\n';
-    }
+        // Validate the input string (check for empty or whitespace-only string)
+        validateInput(input);
 
+        // Remove all vowels from the input text using the helper function
+        std::string result = removeVowelsFromText(input);
+
+        // Output the result to the user (special handling if no vowels were removed)
+        displayResult(input, result);
+
+    }
+    catch (const std::exception& ex) {
+        // Catch any thrown exceptions (e.g., empty input)
+        std::cerr << "Error: " << ex.what() << std::endl;
+    }
     return 0;
 }
